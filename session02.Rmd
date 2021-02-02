@@ -8,3 +8,160 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# Semana pasada
+
+## Funciones apply()
+
+Para repetir la ejecución de un trozo de codigo existe la estructura de control `for`.
+
+```{r}
+alumnos = list(
+  list(nombre = "Ferran",
+       sexo = "Hombre",
+       hombre = TRUE),
+  list(nombre = "Andrea",
+       sexo = "Mujer",
+       hombre = FALSE),
+  list(nombre = "Enric",
+       sexo = "Hombre",
+       hombre = TRUE),
+  list(nombre = "Melina",
+       sexo = "Mujer",
+       hombre = FALSE)
+)
+for(i in alumnos){
+  cat(sprintf("%s es %s, codificado con %d\n", i[["nombre"]], i[["sexo"]], i[["sexo"]] == "Mujer"))
+}
+for(i in alumnos){
+  cat(sprintf("%s es %s\n", i[["nombre"]], ifelse(i[["hombre"]], "hombre", "mujer")))
+}
+```
+
+Podemos hacer lo mismo con un iterador.
+
+```{r}
+formatea_alumno = function(i_alumno){
+  sprintf("%s es %s\n", i_alumno[["nombre"]], ifelse(i_alumno[["hombre"]], "hombre", "mujer"))
+}
+formatea_alumno(alumnos[[4]])
+
+cat(sapply(alumnos, formatea_alumno), sep = "")
+```
+
+Mientras `sapply()` intenta devolver un vector atómico, `lapply()` siempre devuelve una lista.
+
+```{r}
+lapply(alumnos, formatea_alumno)
+```
+
+* `mapply()`. Itera sobre más de un vector.
+
+```{r}
+notas = c(8, 7, 9, 7)
+
+formateo_con_nota = function(i_alumno, i_nota){
+  sprintf("%s ha sacado un %.1f\n", i_alumno[["nombre"]], i_nota)
+}
+
+cat(mapply(formateo_con_nota, alumnos, notas), sep = "")
+```
+
+```{r}
+library(purrr)
+cat(map2_chr(alumnos, notas, formateo_con_nota), sep = "")
+```
+
+# Gestión de datos con `dplyr` y `tidyr`
+
+* `factors` son vectores que permiten almacenar variable categoricas.
+
+```{r}
+x = c("Lunes", "Martes", "Miercoles", "Lunes", "Martes", "Lunes")
+table(x)
+x_factor = factor(x, levels = c("Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"))
+x_factor
+table(x_factor)
+class(x_factor)
+```
+
+Internamente es un vector atómica entero con un atributo levels.
+
+* `matrix` y   `array`
+
+```{r}
+a_int = 1:24
+dim(a_int) = c(3,8)
+a_int
+```
+
+* `data.frame`
+
+```{r}
+df_alumnos = data.frame(
+  nombre = c("Ferran", "Andrea", "Enric", "Melina"),
+  sexo = c("Hombre", "Mujer", "Hombre", "Mujer"),
+  hombre = c(TRUE, FALSE, TRUE,FALSE))
+df_alumnos
+```
+
+`data.frame` es una lista
+
+```{r}
+is.list(df_alumnos)
+```
+
+donde todos sus elementos són vectores atómicos de la misma longitud. Podemos acceder a los elementos de la lista como tal.
+
+```{r}
+df_alumnos[1:2]
+df_alumnos[-1]
+```
+
+O podemos acceder al vector atómico
+
+```{r}
+df_alumnos[['nombre']]
+# Equivalente,
+# df_alumnos[[1]]
+# df_alumnos$nombre
+```
+
+A diferencia de una lista, también podemos seleccionar por filas.
+
+```{r}
+df_alumnos[2:3,] # 2 i tercera fila
+df_alumnos[2:3, c(1,3)] # 2 i tercera fila y segunda y tercera columna
+```
+
+* `tibble`: un `data.frame` "mejor".
+
+```{r}
+library(tibble)
+tbl_alumnos = as_tibble(df_alumnos)
+tbl_alumnos
+```
+
+Si hay muchas filas nos hace un resumen por pantalla.
+
+```{r}
+as_tibble(iris)
+```
+
+La subselección siempre devuelve un tibble.
+
+```{r}
+tbl_alumnos[,1]
+```
+
+También podemos acceder a elementos como una lista
+
+```{r}
+tbl_alumnos[[1]]
+```
+
+# Importació de datos
+
+# Manejo de datos con `dplyr`
+
+
