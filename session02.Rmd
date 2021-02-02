@@ -160,10 +160,100 @@ También podemos acceder a elementos como una lista
 tbl_alumnos[[1]]
 ```
 
-# Importació de datos
+# Importación de datos
 
-## Formato básico de R
+## Archivos nativos de R (.RData, .rds)
+
+Con R és muy fácil guardar cualquier objeto a RData.
+
+```{r}
+save(tbl_alumnos, df_alumnos, alumnos, file = "versiones_alumnos.RData")
+```
+
+Podemos cargar múltiples objectos de un solo archivo.
+
+```{r}
+load("versiones_alumnos.RData")
+```
+
+## Importar tablas des de archivos de texto
+
+Crearemos datos en formato texto. (Hemos creado el archivo datos.csv).
+
+Para importar podemos o bien utilitzar el menú Import Dataset.
+
+```{r}
+library(readr)
+alumnos_importados = read_csv("datos.csv")
+alumnos_importados
+```
+
+Si intentamos importar con archivos separados por ";", tendremos problemas.
+
+```{r}
+read_csv("datos_2.csv")
+```
+
+Definir el tipo de separador se puede hacer si utilizamos la función `read_delim()`.
+
+```{r}
+read_delim("datos_2.csv", delim = ";")
+```
+
+
+# Importación des de Excel
+
+```{r, eval=FALSE}
+download.file("https://github.com/mcomas/Data/raw/master/poblacion_europa.xls", 
+              "poblacion_europa.xls")
+```
+
+Para importar podemos utilitzar la función `read_excel()`.
+
+```{r}
+library(readxl)
+poblacion_europea = read_excel("poblacion_europa.xls", na = ":", skip = 2, n_max = 54)
+tabla = poblacion_europea[-c(1:4),]
+```
+
 
 # Manejo de datos con `dplyr`
 
+```{r}
+library(tidyverse)
+# Con tidyverse entre otros, también hemos cargado `dplyr`.
+```
+
+## Operaciones básicas con `dplyr`
+
+### `filter()`: filtrar datos
+
+```{r}
+library(nycflights13)
+flights_2013_01_01 = filter(flights, day == 1, month == 1, year == 2013)
+```
+
+Podemos filtrar los 6 primeros meses como
+
+```{r}
+filter(flights, month <= 6)
+```
+
+Haced un filtraje de los vuelos con destino IAH i HOU
+
+```{r}
+# |
+filter(flights, dest == 'IAH' | dest == 'HOU')
+# %in%
+filter(flights, dest %in% c("IAH", "HOU"))
+```
+
+La segunda es más comoda porque permite separar la selección del filtro.
+
+```{r}
+AEROPUERTOS = c("IAH", "HOU")
+
+# vnedrá más codigo
+filter(flights, dest %in% AEROPUERTOS)
+```
 
