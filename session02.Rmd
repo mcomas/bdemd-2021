@@ -162,6 +162,8 @@ tbl_alumnos[[1]]
 
 # Importació de datos
 
+## Formato básico de R
+
 # Manejo de datos con `dplyr`
 
 
