@@ -215,3 +215,11 @@ ggplot(data = mpg, aes(x = displ, y = hwy, col = drv)) +
 > Enlace de interés para aprender más sobre rmarkdown: <https://bookdown.org/yihui/rmarkdown/>.
 
 
+```{r}
+generar_grafico_defecto(mpg) + 
+  facet_wrap(~cyl) +
+  theme_minimal() +
+  theme(strip.text = element_text(face = "bold.italic", colour = 'white'), 
+        strip.background = element_rect(fill = 'blue'))
+```
+
