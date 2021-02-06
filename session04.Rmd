@@ -203,3 +203,15 @@ ggplot(data = mpg, aes(x = displ, y = hwy, col = drv)) +
   geom_line()
 ```
 
+Para poner dos gráficos de lado en un chunk
+
+```{r, out.width="45%", fig.show='hold', fig.align='default'}
+ggplot(data = mpg, aes(x = displ, y = hwy, col = drv)) +
+  geom_line()
+ggplot(data = mpg, aes(x = displ, y = hwy, col = drv)) +
+  geom_point()
+```
+
+> Enlace de interés para aprender más sobre rmarkdown: <https://bookdown.org/yihui/rmarkdown/>.
+
+
