@@ -1,0 +1,288 @@
+---
+title: "Sesión 3"
+author: "Marc Comas"
+date: "2/5/2021"
+output: 
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+library(nycflights13)
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Principales funciones del paquete `dplyr`
+
+## Función de filtrar datos `filter()`
+
+El primer parámetro es la tabla y los siguientes son condiciones que debén cumplir los registros para mantenerlos.
+
+* Podemos seleccionar todos los vuelos que tengan un delay en la salida de más de un dia.
+
+```{r}
+flights_con_vuelos_muy_delayed = filter(flights, dep_delay > 12 * 60)
+```
+
+### Otras funciones
+
+`slice()` os permite seleccionar filas por indice.
+
+```{r}
+slice(flights, c(1,3))
+```
+
+```{r}
+slice(flights, 1:1000)
+```
+
+
+* `distinct()`
+
+```{r}
+distinct(flights, year, month)
+```
+
+* ¿De cuantos días tenemos registros?
+
+```{r}
+distinct(flights, year, month, day)
+```
+
+* ¿Cuantas combinacions de vuelos existen?
+
+```{r}
+distinct(flights, origin, dest)
+```
+
+## Función de ordenar `arrange()`
+
+Sirve para ordenar los registros segun algún criterio.
+
+* Ordenar según mes (Descendente), dia (Descendente), retroso al salir (Descendente).
+
+```{r}
+arrange(flights, year, desc(month), desc(day), desc(dep_delay))
+```
+
+## Función de seleccionar `select()`
+
+* Mantenmos solo las columnas `year`, `month`, `day`, `flight`.
+
+```{r}
+select(flights, year, month, day, flight)
+```
+
+## Función creación nuevas columns `mutate()`
+
+* Queremos crear una nueva columna que contenga la velocidad en Km/h
+
+```{r}
+flights_dist_time = select(flights, distance, air_time)
+mutate(flights_dist_time,
+       distance_km = distance / 1.60934,
+       air_time_h = air_time / 60,
+       speed_km_h = distance_km / air_time_h)
+```
+
+## Funcion de resumir `summarise()`
+
+La función `summrise()` resume una columna a un valor. 
+
+* Si queremos calcular el retraso promedio en la salida y en la llegada podemos utilitzar la función `mean()`.
+
+```{r}
+summarise(flights,
+          average_dep_delay = mean(dep_delay, na.rm=TRUE),
+          average_arr_delay = mean(arr_delay, na.rm=TRUE))
+```
+
+> Para las funciones de cálculo de estadísticos, R nos dá NA si el vector atómico (nuestros datos) contienen algun NA.
+
+```{r}
+x = c(2, 4, 6, 5, NA)
+mean(x)
+mean(x, na.rm = TRUE)
+```
+
+Podemos completar el resumén incluyendo informació del número de valores perdidos.
+
+```{r}
+summarise(flights,
+          n_na_dep_delay = sum(is.na(dep_delay)),
+          n_na_arr_delay = sum(is.na(arr_delay)),
+          p_na_dep_delay = mean(is.na(dep_delay)),
+          p_na_arr_delay = mean(is.na(arr_delay)),
+          `%_na_dep_delay` = 100 * p_na_dep_delay,
+          `%_na_arr_delay` = 100 * p_na_arr_delay,
+          average_dep_delay = mean(dep_delay, na.rm=TRUE),
+          average_arr_delay = mean(arr_delay, na.rm=TRUE))
+```
+
+## Función de agrupar `group_by()`
+
+```{r}
+flights_ymd = group_by(flights, year, month, day)
+```
+
+```{r}
+summarise(flights_ymd,
+          n_na_dep_delay = sum(is.na(dep_delay)),
+          n_na_arr_delay = sum(is.na(arr_delay)),
+          p_na_dep_delay = mean(is.na(dep_delay)),
+          p_na_arr_delay = mean(is.na(arr_delay)),
+          `%_na_dep_delay` = 100 * p_na_dep_delay,
+          `%_na_arr_delay` = 100 * p_na_arr_delay,
+          average_dep_delay = mean(dep_delay, na.rm=TRUE),
+          average_arr_delay = mean(arr_delay, na.rm=TRUE))
+```
+
+* Podemos coger una mustra de cinco vuelos de cada dia.
+
+```{r}
+sample_n(flights_ymd, 5)
+```
+
+Podriamos agrupar por vuelos con mucho retraso y vuelos con no tanto retraso.
+
+```{r}
+flights_agrupando_por_retraso = group_by(flights, dep_delay > 12 * 60)
+summarise(flights_agrupando_por_retraso,
+          average_dep_delay = mean(dep_delay, na.rm=TRUE),
+          average_arr_delay = mean(arr_delay, na.rm=TRUE))
+```
+
+```{r}
+tab_1 = filter(flights, dep_delay > 12 * 60)
+tab_2 = filter(flights, !(dep_delay > 12 * 60))
+```
+
+# Haciendo el codigo más bonito con el operador pipe `%>%`
+
+Coger el operando de la izquierda y utilitzarlo como primer argumento del operando (función) de la derecha.
+
+```{r}
+f = function(x,y) x + y
+f(3,4)
+3 %>% f(4)  #  --> f(3, 4)
+```
+
+* Con `dplyr` la sintaxis es más fácil de leer.
+
+```{r}
+flights %>% 
+  group_by(year, month) %>% 
+  sample_n(100) %>%
+  summarise( 
+    n = n(),
+    average_dep_delay = mean(dep_delay, na.rm=TRUE),
+    average_arr_delay = mean(arr_delay, na.rm=TRUE))
+```
+
+
+# Los joins sirven para combinar tablas.
+
+```{r}
+flights %>%
+  select(origin, dest) %>%
+  left_join(select(airports, faa, origin_name = name), by = c('origin' = 'faa')) %>%
+  left_join(select(airports, faa, dest_name = name), by = c('dest' = 'faa'))
+## Con pipe
+
+temp = select(flights, origin, dest)
+left_join(temp, select(airports, faa, origin_name = name), by = c('origin' = 'faa'))
+left_join(temp, select(airports, faa, dest_name = name), by = c('dest' = 'faa'))
+## Con temporales
+
+left_join(
+  left_join(select(flights, origin, dest), 
+            select(airports, faa, origin_name = name), 
+            by = c('origin' = 'faa')),
+  select(airports, faa, dest_name = name), 
+  by = c('dest' = 'faa'))
+## funciones anidadas
+```
+
+
+
+# Estadística descriptiva
+
+## Variables categòricas
+
+```{r}
+flights %>%
+  count(origin) %>%
+  mutate(
+    `%` = prop.table(n) * 100
+  ) %>%
+  knitr::kable()
+```
+
+## Variables numèricas
+
+```{r}
+summarise_dep_delay = function(.data) 
+  summarise(.data,
+            mean_ = mean(dep_delay, na.rm = TRUE),
+            median_ = median(dep_delay, na.rm = TRUE),
+            q1_ = quantile(dep_delay, 0.25, na.rm = TRUE),
+            q3_ = quantile(dep_delay, 0.75, na.rm = TRUE),
+            iqr_ = IQR(dep_delay, na.rm = TRUE),
+            min_ = min(dep_delay, na.rm = TRUE),
+            max_ = max(dep_delay, na.rm = TRUE) )
+flights %>% 
+  summarise_dep_delay()
+```
+
+## Variables numèricas vs variables categòricas
+
+```{r}
+flights %>%
+  group_by(origin) %>%
+  summarise_dep_delay()
+```
+
+## Variables categóricas vs variables categóricas
+
+```{r}
+flights = flights %>% 
+  mutate(arrival = if_else(arr_delay > 0, 'delayed', 'on-time'))
+```
+
+Con la nueva columna podemos analizar la relación entre el retraso en la llegada y el aeropuerto de origen.
+
+* Tabla de contingéncia
+
+```{r}
+tab = table(flights[['origin']], flights[['arrival']])
+tab
+```
+
+* Tablas marginales
+
+Marginal fila
+
+```{r}
+prop.table(tab, 1)
+```
+
+Marginal columna
+
+```{r}
+prop.table(tab, 2)
+```
+
+## Variables numéricas vs variables numéricas
+
+```{r}
+flights %>%
+  summarise(
+    m_dep_delay = median(dep_delay, na.rm = TRUE),
+    iqr_dep_delay = IQR(dep_delay, na.rm = TRUE),
+    m_arr_delay = median(arr_delay, na.rm = TRUE),
+    iqr_arr_delay = IQR(arr_delay, na.rm = TRUE),
+    s_dep_arr_delay = cor(dep_delay, arr_delay, use = 'complete.obs')
+  )
+```
+
