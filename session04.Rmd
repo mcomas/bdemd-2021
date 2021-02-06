@@ -184,3 +184,22 @@ ggplot() +
   geom_point(data = filter(mpg, drv == 'r'), aes(x=displ, y=hwy, col = 'rear wheel drive'))
 ```
 
+Si quisieramos hacer un gráfico de lineas podríamos utilitza la geometria `geom_line()`
+
+```{r}
+dplot = mpg %>%
+  group_by(cyl) %>%
+  summarise(
+    hwy_mean = mean(hwy)
+  )
+ggplot(data=dplot) +
+  geom_point(aes(x=cyl, y = hwy_mean)) + 
+  geom_line(aes(x=cyl, y = hwy_mean))
+```
+
+```{r}
+# Debemos tener los datos ordenados acorde a como quermos visualizar la lineas.
+ggplot(data = mpg, aes(x = displ, y = hwy, col = drv)) +
+  geom_line()
+```
+
