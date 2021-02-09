@@ -1,0 +1,62 @@
+---
+title: "Session 5"
+author: "Marc Comas"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importación de datos tipo texto de github
+
+Conjunto de datos de covid-19: <https://github.com/owid/covid-19-data/blob/master/public/data/vaccinations/vaccinations.csv>
+
+```{r}
+library(tidyverse)
+library(readr)
+url_raw = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv"
+dades = read_csv(url_raw)
+```
+
+```{r}
+df = dades %>%
+  select(location, date, people_fully_vaccinated_per_hundred) %>%
+  na.omit()
+```
+
+```{r}
+ggplot(data = filter(df, location %in% c("Argentina", "Austria", "Chile"))) +
+  geom_line(aes(x = date, y = people_fully_vaccinated_per_hundred, col = location)) +
+  geom_point(aes(x = date, y = people_fully_vaccinated_per_hundred, col = location))
+```
+
+```{r}
+ggplot(data = filter(df, location %in% c("Argentina", "Austria", "Chile"))) +
+  geom_line(aes(x = date, y = people_fully_vaccinated_per_hundred)) +
+  facet_wrap(~location)
+```
+
+```{r}
+df.vaccinated = dades %>%
+  select(location, date, people_fully_vaccinated_per_hundred) %>%
+  na.omit() %>%
+  group_by(location) %>%
+  summarise(vaccinated = max(people_fully_vaccinated_per_hundred))
+```
+
+# Importació de dades de fbred
+
+Importació d'informació de Cristiano Ronaldo i Julian Draxler de la web https://fbref.com:
+
+```{r}
+dades =  list(
+  'Cristiano Ronaldo' = read_csv('fbref_1.csv'),
+  'Julian Draxler' = read_csv('fbref_2.csv')
+) %>%
+  bind_rows(.id = "player")
+```
+
+A <https://npranav10.github.io/blog/scraping_fbref_data.html> donen més informació per fer scrapping de la web.
+
