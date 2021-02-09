@@ -78,3 +78,19 @@ ggradar(dplot) +
   theme(legend.position = 'bottom')
 ```
 
+# Mostrar un gràfico de barras
+
+Con la función `fct_reorder()` podemos reordenar las categorias de una variable categórica según los valores de otra variable. En el seguiente ejemplo, se reordena la variable `manufacturer` del conjunto `dplot` (generado a partir del conjunto `mpg`) según los valores de la variable `hwy.mean`.
+
+```{r}
+dplot = mpg %>%
+  group_by(manufacturer) %>%
+  summarise(hwy.mean = mean(hwy, na.rm=TRUE))
+
+dplot = dplot %>%
+  mutate(manufacturer = fct_reorder(manufacturer, hwy.mean))
+
+ggplot(data=dplot) +
+  geom_bar(aes(y = manufacturer, x = hwy.mean), stat = 'identity')
+```
+
