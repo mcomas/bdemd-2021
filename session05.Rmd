@@ -46,7 +46,7 @@ df.vaccinated = dades %>%
   summarise(vaccinated = max(people_fully_vaccinated_per_hundred))
 ```
 
-# Importació de dades de fbred
+# Importació de dades de fbref
 
 Importació d'informació de Cristiano Ronaldo i Julian Draxler de la web https://fbref.com:
 
@@ -59,4 +59,22 @@ dades =  list(
 ```
 
 A <https://npranav10.github.io/blog/scraping_fbref_data.html> donen més informació per fer scrapping de la web.
+
+Visualización radar. Para la visualización utilitzaremos el paquete `ggradar`. Lo podemos instalar de github con la aplicación `remotes`. 
+
+```{r}
+# remotes::install_github('https://github.com/ricardo-bion/ggradar')
+library(ggradar)
+
+dplot = dades %>%
+  mutate(Gls = Gls/max(Gls),
+          Ast =  Ast/max( Ast),
+         CrdY = CrdY/max(CrdY)) %>%
+  filter(Season == '2020-2021') %>%
+     rename(group = player) %>%
+  select(group, Gls, Ast, CrdY)
+
+ggradar(dplot) +
+  theme(legend.position = 'bottom')
+```
 
